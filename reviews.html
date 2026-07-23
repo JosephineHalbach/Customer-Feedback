@@ -1,7 +1,136 @@
-<hr style="margin:30px 0">
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Kundenempfehlungen</title>
 
-<p style="text-align:center">
-<a href="reviews.html">
-⭐⭐⭐⭐⭐ Kundenempfehlungen ansehen
-</a>
+<style>
+body{
+    margin:0;
+    font-family:Arial,sans-serif;
+    background:#eef4ff;
+}
+
+.container{
+    max-width:900px;
+    margin:40px auto;
+    padding:20px;
+}
+
+h1{
+    text-align:center;
+}
+
+.subtitle{
+    text-align:center;
+    color:#666;
+    margin-bottom:35px;
+}
+
+.card{
+    background:white;
+    border-radius:18px;
+    padding:20px;
+    margin-bottom:20px;
+    box-shadow:0 8px 25px rgba(0,0,0,.08);
+}
+
+.stars{
+    color:#ffbf00;
+    font-size:24px;
+    margin-bottom:10px;
+}
+
+.name{
+    font-weight:bold;
+    margin-top:15px;
+}
+
+.company{
+    color:#666;
+    font-size:14px;
+}
+
+.empty{
+    text-align:center;
+    color:#777;
+    margin-top:60px;
+}
+
+a{
+    color:#0a6cff;
+    text-decoration:none;
+}
+</style>
+
+</head>
+
+<body>
+
+<div class="container">
+
+<h1>⭐⭐⭐⭐⭐ Kundenempfehlungen</h1>
+
+<p class="subtitle">
+Vielen Dank an alle Kunden für ihr Feedback.
 </p>
+
+<div id="reviews"></div>
+
+<p style="text-align:center;margin-top:40px;">
+<a href="index.html">← Zurück zum Feedbackformular</a>
+</p>
+
+</div>
+
+<script>
+
+const reviews=document.getElementById("reviews");
+
+const data=JSON.parse(localStorage.getItem("customer_feedback")||"[]");
+
+if(data.length===0){
+
+reviews.innerHTML=`
+<div class="empty">
+
+<h2>Noch keine Bewertungen vorhanden.</h2>
+
+</div>
+`;
+
+}else{
+
+data.reverse().forEach(r=>{
+
+reviews.innerHTML+=`
+
+<div class="card">
+
+<div class="stars">
+${"★".repeat(r.sterne)}
+</div>
+
+<p>${r.kommentar || "Es wurde kein Kommentar hinterlassen."}</p>
+
+<div class="name">
+${r.name || "Anonym"}
+</div>
+
+<div class="company">
+${r.firma || ""}
+</div>
+
+</div>
+
+`;
+
+});
+
+}
+
+</script>
+
+</body>
+</html>
