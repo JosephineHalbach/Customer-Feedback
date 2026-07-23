@@ -77,71 +77,114 @@ logo.onclick=()=>{
       renderAdmin();
    }
  }
-}
+async function getData() {
 
-function getData(){
- return JSON.parse(localStorage.getItem("customer_feedback")||"[]");
-}
-
-async function saveFeedback() {
-
-    if(rating===0){
-        alert("Bitte Sterne auswählen.");
-        return;
-    }
-
-    const { error } = await supabase
+    const { data, error } = await supabase
         .from("feedback")
-        .insert([{
-            name: document.getElementById("name").value.trim(),
-            company: document.getElementById("company").value.trim(),
-            comment: document.getElementById("comment").value.trim(),
-            rating: rating
-        }]);
+        .select("*")
+        .order("id", { ascending: false });
 
-    if(error){
+    if (error) {
         console.error(error);
-        alert("Fehler: " + error.message);
-        return;
+        return [];
     }
+
+    return data;
+}
+
 
     alert("Vielen Dank für Ihr Feedback!");
 
-    document.getElementById("name").value="";
-    document.getElementById("company").value="";
-    document.getElementById("comment").value="";
+    document.getElementById("name").value = "";
+    document.getElementById("company").value = "";
+    document.getElementById("comment").value = "";
 
-    rating=0;
+    rating = 0;
 
-    [...stars.children].forEach(x=>x.className="star");
+    [...stars.children].forEach(x => x.className = "star");
+async function renderAdmin() {
+
+    const q = document.getElementById("search").value.toLowerCase();
+
+    const { data: all, error } = await supabase
+        .from("feedback")
+        .select("*")
+        .order("id", { ascending: false });
+
+    if (error) {
+        console.error(error);
+        alert(error.message);
+        return;
+    }
+
+    const data = all.filter(x =>
+        !q ||
+        (x.name || "").toLowerCase().includes(q) ||
+        (x.company || "").toLowerCase().includes(q)
+    );
+
+    const avg = data.length
+        ? data.reduce((a, b) => a + b.rating, 0) / data.length
+        : 0;
+
+    stats.textContent =
+        `Bewertungen: ${data.length} | Durchschnitt: ${avg.toFixed(2)} | Kundenzufriedenheit: ${(avg / 5 * 100).toFixed(0)}%`;
+
+    tbody.innerHTML = "";
+    quotes.innerHTML = "";
+
+    let dist = [0,0,0,0,0];
+
+    data.forEach(x => {
+
+        dist[x.rating - 1]++;
+
+        tbody.innerHTML += `
+        <tr>
+            <td>${x.created_at ? new Date(x.created_at).toLocaleDateString("de-DE") : "-"}</td>
+            <td>${x.name || "-"}</td>
+            <td>${x.company || "-"}</td>
+            <td>${x.rating}</td>
+        </tr>`;
+
+        if (x.rating >= 4 && x.comment) {
+
+            quotes.innerHTML += `
+            <blockquote>
+            "${x.comment}"
+            <br>
+            <small>${x.name || "Anonym"}${x.company ? " – " + x.company : ""}</small>
+            </blockquote>`;
+        }
+
+    });
+
+    if(chart) chart.destroy();
+
+    chart = new Chart(document.getElementById("chart"),{
+
+        type:"bar",
+
+        data:{
+            labels:["1","2","3","4","5"],
+            datasets:[{
+                label:"Sterne",
+                data:dist
+            }]
+        },
+
+        options:{
+            responsive:true,
+            plugins:{
+                legend:{
+                    display:false
+                }
+            }
+        }
+
+    });
+
 }
- };
- let data=getData();
- data.push(entry);
- localStorage.setItem("customer_feedback",JSON.stringify(data));
- alert("Vielen Dank für Ihr Feedback!");
- document.getElementById("name").value="";
- document.getElementById("company").value="";
- document.getElementById("comment").value="";
- rating=0;
- [...stars.children].forEach(x=>x.className="star");
-}
-
-function renderAdmin(){
- const q=document.getElementById("search").value.toLowerCase();
- const all=getData();
- const data=all.filter(x=>!q||x.name.toLowerCase().includes(q)||x.firma.toLowerCase().includes(q));
- const avg=data.length?data.reduce((a,b)=>a+b.sterne,0)/data.length:0;
- stats.textContent=`Bewertungen: ${data.length} | Durchschnitt: ${avg.toFixed(2)} | Kundenzufriedenheit: ${(avg/5*100).toFixed(0)}%`;
- tbody.innerHTML="";
- quotes.innerHTML="";
- let dist=[0,0,0,0,0];
- data.forEach(x=>{
-   dist[x.sterne-1]++;
-   tbody.innerHTML+=`<tr><td>${x.datum}</td><td>${x.name||"-"}</td><td>${x.firma||"-"}</td><td>${x.sterne}</td></tr>`;
-   if(x.sterne>=4 && x.kommentar){
-      quotes.innerHTML+=`<blockquote>"${x.kommentar}"<br><small>${x.name||"Anonym"}${x.firma?" – "+x.firma:""}</small></blockquote>`;
-   }
  });
  if(chart)chart.destroy();
  chart=new Chart(document.getElementById("chart"),{
@@ -149,16 +192,32 @@ function renderAdmin(){
    data:{labels:["1","2","3","4","5"],datasets:[{label:"Sterne",data:dist}]},
    options:{plugins:{legend:{display:false}}}
  });
-}
+async function exportJSON(){
 
-function exportJSON(){
- const blob=new Blob([JSON.stringify(getData(),null,2)],{type:"application/json"});
- const a=document.createElement("a");
- a.href=URL.createObjectURL(blob);
- a.download="customer-feedback-backup.json";
- a.click();
+    const { data, error } = await supabase
+        .from("feedback")
+        .select("*")
+        .order("id",{ascending:false});
+
+    if(error){
+        console.error(error);
+        return;
+    }
+
+    const blob = new Blob(
+        [JSON.stringify(data,null,2)],
+        {type:"application/json"}
+    );
+
+    const a=document.createElement("a");
+    a.href=URL.createObjectURL(blob);
+    a.download="customer-feedback-backup.json";
+    a.click();
+
 }
-</script><script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script><script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
+<script>
 const supabase = window.supabase.createClient(
     "https://wdshlmngpxxkduyzqjhx.supabase.co",
     "sb_publishable_yu27RAR9CaloFRv3_LGlXA_k9UemqxG"
