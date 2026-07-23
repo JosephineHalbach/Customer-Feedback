@@ -5,7 +5,14 @@
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>Customer Feedback</title>
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-<style>
+<style><script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
+<script>
+const supabase = window.supabase.createClient(
+  "https://wdshlmngpxxkduyzqjhx.supabase.co",
+  "sb_publishable_yu27RAR9CaloFRv3_LGlXA_k9UemqxG"
+);
+</script>
 body{margin:0;font-family:Arial,sans-serif;background:linear-gradient(135deg,#eef4ff,#dbe9ff)}
 .container{max-width:650px;margin:30px auto;padding:20px}
 .card{background:#fff;border-radius:22px;padding:24px;box-shadow:0 10px 30px rgba(0,0,0,.12)}
@@ -91,7 +98,7 @@ function getData(){
  return JSON.parse(localStorage.getItem("customer_feedback")||"[]");
 }
 
-function saveFeedback(){
+async function saveFeedback(){
  if(rating===0){alert("Bitte Sterne auswählen.");return;}
  const entry={
    datum:new Date().toLocaleString("de-DE"),
@@ -102,7 +109,23 @@ function saveFeedback(){
  };
  let data=getData();
  data.push(entry);
- localStorage.setItem("customer_feedback",JSON.stringify(data));
+ localStorage.setItem("customer_feedback",JSON.stringify(data));try{
+    const { error } = await supabase
+        .from("feedback")
+        .insert([{
+            name: entry.name,
+            firma: entry.firma,
+            kommentar: entry.kommentar,
+            sterne: entry.sterne
+        }]);
+
+    if(error){
+        console.error(error);
+        alert("Feedback wurde lokal gespeichert, konnte aber nicht in die Cloud übertragen werden.");
+    }
+}catch(e){
+    console.error(e);
+ }
  alert("Vielen Dank für Ihr Feedback!");
  document.getElementById("name").value="";
  document.getElementById("company").value="";
