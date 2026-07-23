@@ -83,7 +83,7 @@ function getData(){
  return JSON.parse(localStorage.getItem("customer_feedback")||"[]");
 }
 
-function saveFeedback(){async function saveFeedback(){
+async function saveFeedback() {
 
     if(rating===0){
         alert("Bitte Sterne auswählen.");
