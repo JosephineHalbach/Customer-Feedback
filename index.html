@@ -83,14 +83,38 @@ function getData(){
  return JSON.parse(localStorage.getItem("customer_feedback")||"[]");
 }
 
-function saveFeedback(){
- if(rating===0){alert("Bitte Sterne auswählen.");return;}
- const entry={
-   datum:new Date().toLocaleString("de-DE"),
-   name:document.getElementById("name").value.trim(),
-   firma:document.getElementById("company").value.trim(),
-   kommentar:document.getElementById("comment").value.trim(),
-   sterne:rating
+function saveFeedback(){async function saveFeedback(){
+
+    if(rating===0){
+        alert("Bitte Sterne auswählen.");
+        return;
+    }
+
+    const { error } = await supabase
+        .from("feedback")
+        .insert([{
+            name: document.getElementById("name").value.trim(),
+            company: document.getElementById("company").value.trim(),
+            comment: document.getElementById("comment").value.trim(),
+            rating: rating
+        }]);
+
+    if(error){
+        console.error(error);
+        alert("Fehler: " + error.message);
+        return;
+    }
+
+    alert("Vielen Dank für Ihr Feedback!");
+
+    document.getElementById("name").value="";
+    document.getElementById("company").value="";
+    document.getElementById("comment").value="";
+
+    rating=0;
+
+    [...stars.children].forEach(x=>x.className="star");
+}
  };
  let data=getData();
  data.push(entry);
