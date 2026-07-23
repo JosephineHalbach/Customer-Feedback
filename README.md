@@ -4,4 +4,3 @@ I love to grow, learn, and become the best version of myself. Your honest feedba
 
 ## Leave your review
 
-https://josephinehalbach.github.io/Customer-Feedback/
