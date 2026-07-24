@@ -59,7 +59,15 @@ blockquote{background:#f4f8ff;border-left:4px solid #0a6cff;padding:10px;border-
 <h3>Positive Kundenstimmen</h3>
 <div id="quotes"></div>
 <table>
-<thead><tr><th>Datum</th><th>Name</th><th>Firma</th><th>Sterne</th></tr></thead>
+<thead>
+<tr>
+<th>Datum</th>
+<th>Name</th>
+<th>Firma</th>
+<th>Sterne</th>
+<th>Löschen</th>
+</tr>
+</thead>
 <tbody id="tbody"></tbody>
 </table>
 <button onclick="exportJSON()">Backup herunterladen</button>
@@ -145,7 +153,14 @@ function renderAdmin(){
  let dist=[0,0,0,0,0];
  data.forEach(x=>{
    dist[x.sterne-1]++;
-   tbody.innerHTML+=`<tr><td>${x.datum}</td><td>${x.name||"-"}</td><td>${x.firma||"-"}</td><td>${x.sterne}</td></tr>`;
+   tbody.innerHTML+=`
+<tr>
+<td>${x.datum}</td>
+<td>${x.name||"-"}</td>
+<td>${x.firma||"-"}</td>
+<td>${x.sterne}</td>
+<td><button onclick="deleteFeedback(${all.indexOf(x)})">🗑️</button></td>
+</tr>`;
    if(x.sterne>=4 && x.kommentar){
       quotes.innerHTML+=`<blockquote>"${x.kommentar}"<br><small>${x.name||"Anonym"}${x.firma?" – "+x.firma:""}</small></blockquote>`;
    }
@@ -164,6 +179,15 @@ function exportJSON(){
  a.href=URL.createObjectURL(blob);
  a.download="customer-feedback-backup.json";
  a.click();
+}function deleteFeedback(index){
+    if(!confirm("Bewertung wirklich löschen?")) return;
+
+    let data = getData();
+    data.splice(index,1);
+
+    localStorage.setItem("customer_feedback", JSON.stringify(data));
+
+    renderAdmin();
 }
 </script>
 </body>
