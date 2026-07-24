@@ -6,7 +6,7 @@ I'd truly appreciate it if you could take a moment to leave a review.
 
 **[Open Customer Feedback](https://josephinehalbach.github.io/Customer-Feedback/)**
 
-**[View Customer Recommendations ⭐⭐⭐⭐⭐](https://josephinehalbach.github.io/Customer-Feedback/reviews.html)**
+**[Open Customer Feedback (Supabase-Version)](https://josephinehalbach.github.io/Customer-Feedback/customer-feedback-supabase.html)**
 
 ---
 Thank you for taking the time to support my journey. ❤️
