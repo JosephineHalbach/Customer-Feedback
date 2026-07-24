@@ -14,7 +14,14 @@ const supabase = window.supabase.createClient(
 );
 </script>
 
-<style>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
+<script>
+const supabase = window.supabase.createClient(
+  "https://wdshlmngpxxkduyzqjhx.supabase.co",
+  "sb_publishable_yu27RAR9CaloFRv3_LGlXA_k9UemqxG"
+);
+</script><style>
 ...
 <script> 
 const supabase = window.supabase.createClient(
@@ -111,8 +118,18 @@ logo.onclick=()=>{
  }
 }
 
-function getData(){
- return JSON.parse(localStorage.getItem("customer_feedback")||"[]");
+async function getData(){
+    const { data, error } = await supabase
+        .from("feedback")
+        .select("*")
+        .order("created_at",{ascending:false});
+
+    if(error){
+        console.error(error);
+        return [];
+    }
+
+    return data;
 }
 
 async function saveFeedback(){
@@ -151,9 +168,9 @@ async function saveFeedback(){
  [...stars.children].forEach(x=>x.className="star");
 }
 
-function renderAdmin(){
+async function renderAdmin(){
  const q=document.getElementById("search").value.toLowerCase();
- const all=getData();
+ const all = await getData();
  const data=all.filter(x=>!q||x.name.toLowerCase().includes(q)||x.firma.toLowerCase().includes(q));
  const avg=data.length?data.reduce((a,b)=>a+b.sterne,0)/data.length:0;
  stats.textContent=`Bewertungen: ${data.length} | Durchschnitt: ${avg.toFixed(2)} | Kundenzufriedenheit: ${(avg/5*100).toFixed(0)}%`;
@@ -164,7 +181,7 @@ function renderAdmin(){
    dist[x.sterne-1]++;
    tbody.innerHTML+=`
 <tr>
-<td>${x.datum}</td>
+<td>${new Date(x.created_at).toLocaleString("de-DE")}</td>
 <td>${x.name||"-"}</td>
 <td>${x.firma||"-"}</td>
 <td>${x.sterne}</td>
@@ -183,20 +200,44 @@ function renderAdmin(){
 }
 
 function exportJSON(){
- const blob=new Blob([JSON.stringify(getData(),null,2)],{type:"application/json"});
+ const blob=new Blob([async function exportJSON(){
+
+    const data = await getData();
+
+    const blob = new Blob(
+        [JSON.stringify(data, null, 2)],
+        {type:"application/json"}
+    );
+
+    const a = document.createElement("a");
+    a.href = URL.createObjectURL(blob);
+    a.download = "customer-feedback-backup.json";
+    a.click();
+ })],{type:"application/json"});
  const a=document.createElement("a");
  a.href=URL.createObjectURL(blob);
  a.download="customer-feedback-backup.json";
  a.click();
-}function deleteFeedback(index){
+}async function deleteFeedback(id){
+
     if(!confirm("Bewertung wirklich löschen?")) return;
 
-    let data = getData();
-    data.splice(index,1);
+    const { error } = await supabase
+        .from("feedback")
+        .delete()
+        .eq("id",id);
 
-    localStorage.setItem("customer_feedback", JSON.stringify(data));
+    if(error){
+        console.error(error);
+        return;
+    }
 
-    renderAdmin();
+    async function renderAdmin() {
+    const q = document.getElementById("search").value.toLowerCase();
+
+    const all = await getData();
+    ...
+    };
 }
 </script>
 </body>
