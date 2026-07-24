@@ -17,18 +17,17 @@ const supabase = window.supabase.createClient(
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 
 <script>
-const supabase = window.supabase.createClient(
-  "https://wdshlmngpxxkduyzqjhx.supabase.co",
-  "sb_publishable_yu27RAR9CaloFRv3_LGlXA_k9UemqxG"
-);
-</script><style>
-...
-<script> 
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
+<script>
 const supabase = window.supabase.createClient(
   "https://wdshlmngpxxkduyzqjhx.supabase.co",
   "sb_publishable_yu27RAR9CaloFRv3_LGlXA_k9UemqxG"
 );
 </script>
+  <style>
+body{
 body{margin:0;font-family:Arial,sans-serif;background:linear-gradient(135deg,#eef4ff,#dbe9ff)}
 .container{max-width:650px;margin:30px auto;padding:20px}
 .card{background:#fff;border-radius:22px;padding:24px;box-shadow:0 10px 30px rgba(0,0,0,.12)}
@@ -141,17 +140,7 @@ async function saveFeedback(){
    kommentar:document.getElementById("comment").value.trim(),
    sterne:rating
  };
- let data=getData();
- data.push(entry);
- localStorage.setItem("customer_feedback",JSON.stringify(data));try{
-    const { error } = await supabase
-        .from("feedback")
-        .insert([{
-            name: entry.name,
-            firma: entry.firma,
-            kommentar: entry.kommentar,
-            sterne: entry.sterne
-        }]);
+  try{
 
     if(error){
         console.error(error);
@@ -185,7 +174,7 @@ async function renderAdmin(){
 <td>${x.name||"-"}</td>
 <td>${x.firma||"-"}</td>
 <td>${x.sterne}</td>
-<td><button onclick="deleteFeedback(${all.indexOf(x)})">🗑️</button></td>
+<td><button onclick="deleteFeedback(${x.id})">🗑️</button></td>
 </tr>`;
    if(x.sterne>=4 && x.kommentar){
       quotes.innerHTML+=`<blockquote>"${x.kommentar}"<br><small>${x.name||"Anonym"}${x.firma?" – "+x.firma:""}</small></blockquote>`;
@@ -199,45 +188,36 @@ async function renderAdmin(){
  });
 }
 
-function exportJSON(){
- const blob=new Blob([async function exportJSON(){
+async function exportJSON(){
 
     const data = await getData();
 
     const blob = new Blob(
         [JSON.stringify(data, null, 2)],
-        {type:"application/json"}
+        { type: "application/json" }
     );
 
     const a = document.createElement("a");
     a.href = URL.createObjectURL(blob);
     a.download = "customer-feedback-backup.json";
     a.click();
- })],{type:"application/json"});
- const a=document.createElement("a");
- a.href=URL.createObjectURL(blob);
- a.download="customer-feedback-backup.json";
- a.click();
-}async function deleteFeedback(id){
+}
+
+async function deleteFeedback(id){
 
     if(!confirm("Bewertung wirklich löschen?")) return;
 
     const { error } = await supabase
         .from("feedback")
         .delete()
-        .eq("id",id);
+        .eq("id", id);
 
     if(error){
         console.error(error);
         return;
     }
 
-    async function renderAdmin() {
-    const q = document.getElementById("search").value.toLowerCase();
-
-    const all = await getData();
-    ...
-    };
+    renderAdmin();
 }
 </script>
 </body>
