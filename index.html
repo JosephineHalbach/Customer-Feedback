@@ -14,20 +14,7 @@ const supabase = window.supabase.createClient(
 );
 </script>
 
-<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-
-<script>
-<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-
-<script>
-const supabase = window.supabase.createClient(
-  "https://wdshlmngpxxkduyzqjhx.supabase.co",
-  "sb_publishable_yu27RAR9CaloFRv3_LGlXA_k9UemqxG"
-);
-</script>
-  <style>
-body{
+<style>
 body{margin:0;font-family:Arial,sans-serif;background:linear-gradient(135deg,#eef4ff,#dbe9ff)}
 .container{max-width:650px;margin:30px auto;padding:20px}
 .card{background:#fff;border-radius:22px;padding:24px;box-shadow:0 10px 30px rgba(0,0,0,.12)}
@@ -74,15 +61,7 @@ blockquote{background:#f4f8ff;border-left:4px solid #0a6cff;padding:10px;border-
 <h3>Positive Kundenstimmen</h3>
 <div id="quotes"></div>
 <table>
-<thead>
-<tr>
-<th>Datum</th>
-<th>Name</th>
-<th>Firma</th>
-<th>Sterne</th>
-<th>Löschen</th>
-</tr>
-</thead>
+<thead><tr><th>Datum</th><th>Name</th><th>Firma</th><th>Sterne</th></tr></thead>
 <tbody id="tbody"></tbody>
 </table>
 <button onclick="exportJSON()">Backup herunterladen</button>
@@ -118,37 +97,37 @@ logo.onclick=()=>{
 }
 
 async function getData(){
-    const { data, error } = await supabase
-        .from("feedback")
-        .select("*")
-        .order("created_at",{ascending:false});
+ const { data, error } = await supabase
+   .from("feedback")
+   .select("*")
+   .order("created_at",{ascending:false});
 
-    if(error){
-        console.error(error);
-        return [];
-    }
-
-    return data;
+ if(error){
+   console.error(error);
+   return [];
+ }
+ return data;
 }
 
 async function saveFeedback(){
  if(rating===0){alert("Bitte Sterne auswählen.");return;}
  const entry={
-   datum:new Date().toLocaleString("de-DE"),
    name:document.getElementById("name").value.trim(),
    firma:document.getElementById("company").value.trim(),
    kommentar:document.getElementById("comment").value.trim(),
    sterne:rating
  };
-  try{
 
-    if(error){
-        console.error(error);
-        alert("Feedback wurde lokal gespeichert, konnte aber nicht in die Cloud übertragen werden.");
-    }
-}catch(e){
-    console.error(e);
+ const { error } = await supabase
+   .from("feedback")
+   .insert([entry]);
+
+ if(error){
+   console.error(error);
+   alert("Feedback konnte nicht gespeichert werden. Bitte versuchen Sie es erneut.");
+   return;
  }
+
  alert("Vielen Dank für Ihr Feedback!");
  document.getElementById("name").value="";
  document.getElementById("company").value="";
@@ -159,8 +138,8 @@ async function saveFeedback(){
 
 async function renderAdmin(){
  const q=document.getElementById("search").value.toLowerCase();
- const all = await getData();
- const data=all.filter(x=>!q||x.name.toLowerCase().includes(q)||x.firma.toLowerCase().includes(q));
+ const all=await getData();
+ const data=all.filter(x=>!q||(x.name||"").toLowerCase().includes(q)||(x.firma||"").toLowerCase().includes(q));
  const avg=data.length?data.reduce((a,b)=>a+b.sterne,0)/data.length:0;
  stats.textContent=`Bewertungen: ${data.length} | Durchschnitt: ${avg.toFixed(2)} | Kundenzufriedenheit: ${(avg/5*100).toFixed(0)}%`;
  tbody.innerHTML="";
@@ -168,14 +147,8 @@ async function renderAdmin(){
  let dist=[0,0,0,0,0];
  data.forEach(x=>{
    dist[x.sterne-1]++;
-   tbody.innerHTML+=`
-<tr>
-<td>${new Date(x.created_at).toLocaleString("de-DE")}</td>
-<td>${x.name||"-"}</td>
-<td>${x.firma||"-"}</td>
-<td>${x.sterne}</td>
-<td><button onclick="deleteFeedback(${x.id})">🗑️</button></td>
-</tr>`;
+   const datum=x.created_at?new Date(x.created_at).toLocaleString("de-DE"):"-";
+   tbody.innerHTML+=`<tr><td>${datum}</td><td>${x.name||"-"}</td><td>${x.firma||"-"}</td><td>${x.sterne}</td></tr>`;
    if(x.sterne>=4 && x.kommentar){
       quotes.innerHTML+=`<blockquote>"${x.kommentar}"<br><small>${x.name||"Anonym"}${x.firma?" – "+x.firma:""}</small></blockquote>`;
    }
@@ -189,35 +162,12 @@ async function renderAdmin(){
 }
 
 async function exportJSON(){
-
-    const data = await getData();
-
-    const blob = new Blob(
-        [JSON.stringify(data, null, 2)],
-        { type: "application/json" }
-    );
-
-    const a = document.createElement("a");
-    a.href = URL.createObjectURL(blob);
-    a.download = "customer-feedback-backup.json";
-    a.click();
-}
-
-async function deleteFeedback(id){
-
-    if(!confirm("Bewertung wirklich löschen?")) return;
-
-    const { error } = await supabase
-        .from("feedback")
-        .delete()
-        .eq("id", id);
-
-    if(error){
-        console.error(error);
-        return;
-    }
-
-    renderAdmin();
+ const data=await getData();
+ const blob=new Blob([JSON.stringify(data,null,2)],{type:"application/json"});
+ const a=document.createElement("a");
+ a.href=URL.createObjectURL(blob);
+ a.download="customer-feedback-backup.json";
+ a.click();
 }
 </script>
 </body>
