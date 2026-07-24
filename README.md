@@ -4,7 +4,7 @@
 I love to grow, learn, and become the best version of myself. Your honest feedback helps me improve every day.
 I'd truly appreciate it if you could take a moment to leave a review.
 
-**[Open Customer Feedback](https://josephinehalbach.github.io/Customer-Feedback/)**
+**[Open Customer Feedback]**
 
 **[Open Customer Feedback (Supabase-Version)](https://josephinehalbach.github.io/Customer-Feedback/customer-feedback-supabase.html)**
 
