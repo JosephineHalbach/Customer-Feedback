@@ -137,10 +137,10 @@
       }
       submitBtn.disabled = true;
       const entry = {
-        name: document.getElementById("name").value.trim(),
-        firma: document.getElementById("company").value.trim(),
-        kommentar: document.getElementById("comment").value.trim(),
-        sterne: rating
+        Name: document.getElementById("name").value.trim(),
+        Firma: document.getElementById("company").value.trim(),
+        Kommentar: document.getElementById("comment").value.trim(),
+        Sterne: rating
       };
       const { error } = await supabaseClient.from("feedback").insert(entry);
       submitBtn.disabled = false;
@@ -179,19 +179,19 @@
 
       const query = document.getElementById("search").value.toLowerCase();
       const data = all.filter(entry =>
-        !query || (entry.name || "").toLowerCase().includes(query) || (entry.firma || "").toLowerCase().includes(query)
+        !query || (entry.Name || "").toLowerCase().includes(query) || (entry.Firma || "").toLowerCase().includes(query)
       );
-      const average = data.length ? data.reduce((sum, entry) => sum + entry.sterne, 0) / data.length : 0;
+      const average = data.length ? data.reduce((sum, entry) => sum + entry.Sterne, 0) / data.length : 0;
       stats.textContent = `Bewertungen: ${data.length} | Durchschnitt: ${average.toFixed(2)} | Kundenzufriedenheit: ${(average / 5 * 100).toFixed(0)}%`;
       tbody.innerHTML = "";
       quotes.innerHTML = "";
       const distribution = [0, 0, 0, 0, 0];
 
       data.forEach(entry => {
-        distribution[entry.sterne - 1]++;
+        distribution[entry.Sterne - 1]++;
         const datum = entry.created_at ? new Date(entry.created_at).toLocaleString("de-DE") : "-";
         const row = document.createElement("tr");
-        [datum, entry.name || "-", entry.firma || "-", `${entry.sterne} ⭐`, entry.kommentar || "-"].forEach(value => {
+        [datum, entry.Name || "-", entry.Firma || "-", `${entry.Sterne} ⭐`, entry.Kommentar || "-"].forEach(value => {
           const cell = document.createElement("td");
           cell.textContent = value;
           row.appendChild(cell);
@@ -205,11 +205,11 @@
         row.appendChild(actionCell);
         tbody.appendChild(row);
 
-        if (entry.sterne >= 4 && entry.kommentar) {
+        if (entry.Sterne >= 4 && entry.Kommentar) {
           const quote = document.createElement("blockquote");
-          quote.append(`"${entry.kommentar}"`);
+          quote.append(`"${entry.Kommentar}"`);
           const source = document.createElement("small");
-          source.textContent = `${entry.name || "Anonym"}${entry.firma ? " – " + entry.firma : ""}`;
+          source.textContent = `${entry.Name || "Anonym"}${entry.Firma ? " – " + entry.Firma : ""}`;
           quote.appendChild(document.createElement("br"));
           quote.appendChild(source);
           quotes.appendChild(quote);
@@ -240,6 +240,9 @@
       URL.revokeObjectURL(link.href);
     }
 
+    // Buttons rufen diese Funktionen über onclick="..." auf – da sie jetzt
+    // innerhalb der IIFE liegen, müssen sie explizit am window-Objekt
+    // verfügbar gemacht werden.
     window.saveFeedback = saveFeedback;
     window.exportJSON = exportJSON;
     window.renderAdmin = renderAdmin;
