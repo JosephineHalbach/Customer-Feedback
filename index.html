@@ -157,7 +157,7 @@
 
         if (entry.sterne >= 4 && entry.kommentar) {
           const quote = document.createElement("blockquote");
-          quote.append(`“${entry.kommentar}”`);
+          quote.append(`"${entry.kommentar}"`);
           const source = document.createElement("small");
           source.textContent = `${entry.name || "Anonym"}${entry.firma ? " – " + entry.firma : ""}`;
           quote.appendChild(document.createElement("br"));
@@ -170,7 +170,7 @@
       chart = new Chart(document.getElementById("chart"), {
         type: "bar",
         data: { labels: ["1", "2", "3", "4", "5"], datasets: [{ label: "Sterne", data: distribution }] },
-        options: { plugins: { legend: { display: false } } }
+        options: { plugins: { legend: { display: false } }, scales: { y: { beginAtZero: true, ticks: { precision: 0 } } } }
       });
     }
 
