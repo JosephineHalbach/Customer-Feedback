@@ -240,9 +240,6 @@
       URL.revokeObjectURL(link.href);
     }
 
-    // Buttons rufen diese Funktionen über onclick="..." auf – da sie jetzt
-    // innerhalb der IIFE liegen, müssen sie explizit am window-Objekt
-    // verfügbar gemacht werden.
     window.saveFeedback = saveFeedback;
     window.exportJSON = exportJSON;
     window.renderAdmin = renderAdmin;
