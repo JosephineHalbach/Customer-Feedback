@@ -135,12 +135,20 @@ function renderAdmin(){
  });
 }
 
-function exportJSON(){
+function exportJSON() { 
  const blob=new Blob([JSON.stringify(getData(),null,2)],{type:"application/json"});
  const a=document.createElement("a");
  a.href=URL.createObjectURL(blob);
  a.download="customer-feedback-backup.json";
  a.click();
+}function deleteFeedback(index){
+    if(!confirm("Möchtest du dieses Feedback wirklich löschen?")) return;
+
+    let data = getData();
+    data.splice(index, 1);
+
+    localStorage.setItem("customer_feedback", JSON.stringify(data));
+    renderAdmin();
 }
 </script>
 </body>
