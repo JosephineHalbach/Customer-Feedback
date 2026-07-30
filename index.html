@@ -64,6 +64,17 @@
   </div>
 
   <script>
+  // Alles in einer IIFE (self-executing function), damit const/let-Variablen
+  // NICHT im globalen Scope landen. Das verhindert "Identifier ... has already
+  // been declared"-Fehler, selbst falls dieses Skript versehentlich mehrfach
+  // im HTML eingebunden ist.
+  (function () {
+    if (window.__feedbackAppInitialized) {
+      console.warn("Feedback-Skript wurde bereits initialisiert – zweite Ausführung wird übersprungen.");
+      return;
+    }
+    window.__feedbackAppInitialized = true;
+
     const SUPABASE_URL = "https://wdshlmngpxxkduyzqjhx.supabase.co";
     const SUPABASE_KEY = "sb_publishable_yu27RAR9CaloFRv3_LGlXA_k9UemqxG";
     const supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
@@ -227,6 +238,15 @@
       link.click();
       URL.revokeObjectURL(link.href);
     }
+
+    // Buttons rufen diese Funktionen über onclick="..." auf – da sie jetzt
+    // innerhalb der IIFE liegen, müssen sie explizit am window-Objekt
+    // verfügbar gemacht werden.
+    window.saveFeedback = saveFeedback;
+    window.exportJSON = exportJSON;
+    window.renderAdmin = renderAdmin;
+    window.deleteFeedback = deleteFeedback;
+  })();
   </script>
 </body>
 </html>
