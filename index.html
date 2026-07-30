@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>Customer Feedback</title>
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
   <style>
     body { margin: 0; font-family: Arial, sans-serif; background: linear-gradient(135deg, #eef4ff, #dbe9ff); }
     .container { max-width: 650px; margin: 30px auto; padding: 20px; }
@@ -66,7 +66,7 @@
   <script>
     const SUPABASE_URL = "https://wdshlmngpxxkduyzqjhx.supabase.co";
     const SUPABASE_KEY = "sb_publishable_yu27RAR9CaloFRv3_LGlXA_k9UemqxG";
-    const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+    const supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
     let rating = 0, taps = 0, chart;
     const stars = document.getElementById("stars");
@@ -110,7 +110,7 @@
 
     // Loads all feedback rows from Supabase, newest first.
     async function getData() {
-      const { data, error } = await supabase
+      const { data, error } = await supabaseClient
         .from("feedback")
         .select("*")
         .order("created_at", { ascending: false });
@@ -131,7 +131,7 @@
         kommentar: document.getElementById("comment").value.trim(),
         sterne: rating
       };
-      const { error } = await supabase.from("feedback").insert(entry);
+      const { error } = await supabaseClient.from("feedback").insert(entry);
       submitBtn.disabled = false;
       if (error) {
         showError(formError, "Feedback konnte nicht gespeichert werden. Bitte später erneut versuchen.");
@@ -147,7 +147,7 @@
 
     async function deleteFeedback(id) {
       if (!confirm("Möchtest du dieses Feedback wirklich löschen?")) return;
-      const { error } = await supabase.from("feedback").delete().eq("id", id);
+      const { error } = await supabaseClient.from("feedback").delete().eq("id", id);
       if (error) {
         showError(adminError, "Löschen ist fehlgeschlagen. Bitte erneut versuchen.");
         return;
