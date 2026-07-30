@@ -1,174 +1,232 @@
 <!DOCTYPE html>
 <html lang="de">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width,initial-scale=1">
-<title>Customer Feedback</title>
-<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-
-<script>
-const supabase = window.supabase.createClient(
-  "https://wdshlmngpxxkduyzqjhx.supabase.co",
-  "sb_publishable_yu27RAR9CaloFRv3_LGlXA_k9UemqxG"
-);
-</script>
-
-<style>
-body{margin:0;font-family:Arial,sans-serif;background:linear-gradient(135deg,#eef4ff,#dbe9ff)}
-.container{max-width:650px;margin:30px auto;padding:20px}
-.card{background:#fff;border-radius:22px;padding:24px;box-shadow:0 10px 30px rgba(0,0,0,.12)}
-h1{text-align:center;margin:0 0 15px}
-.logo{text-align:center;font-size:46px;cursor:pointer}
-.stars{text-align:center;font-size:42px;margin:15px 0}
-.star{cursor:pointer;color:#bbb;transition:.2s}
-.star.active{color:#ffbf00;transform:scale(1.15)}
-input,textarea{width:100%;padding:12px;margin:8px 0;border-radius:12px;border:1px solid #ccc;box-sizing:border-box}
-button{width:100%;padding:14px;border:none;border-radius:12px;background:#0a6cff;color:#fff;font-size:16px;cursor:pointer}
-button:hover{background:#0055dd}
-#admin{display:none}
-table{width:100%;border-collapse:collapse;margin-top:15px}
-th,td{border:1px solid #ddd;padding:8px}
-blockquote{background:#f4f8ff;border-left:4px solid #0a6cff;padding:10px;border-radius:8px}
-</style>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Customer Feedback</title>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <style>
+    body { margin: 0; font-family: Arial, sans-serif; background: linear-gradient(135deg, #eef4ff, #dbe9ff); }
+    .container { max-width: 650px; margin: 30px auto; padding: 20px; }
+    .card { background: #fff; border-radius: 22px; padding: 24px; box-shadow: 0 10px 30px rgba(0, 0, 0, .12); }
+    h1 { text-align: center; margin: 0 0 15px; }
+    .logo { text-align: center; font-size: 46px; cursor: pointer; }
+    .stars { text-align: center; font-size: 42px; margin: 15px 0; }
+    .star { cursor: pointer; color: #bbb; transition: .2s; }
+    .star.active { color: #ffbf00; transform: scale(1.15); }
+    input, textarea { width: 100%; padding: 12px; margin: 8px 0; border-radius: 12px; border: 1px solid #ccc; box-sizing: border-box; }
+    button { width: 100%; padding: 14px; border: none; border-radius: 12px; background: #0a6cff; color: #fff; font-size: 16px; cursor: pointer; }
+    button:hover { background: #0055dd; }
+    button:disabled { opacity: .6; cursor: not-allowed; }
+    .delete-button { width: auto; padding: 6px 12px; border-radius: 8px; background: #d9534f; font-size: 14px; white-space: nowrap; }
+    .delete-button:hover { background: #c9302c; }
+    #admin { display: none; }
+    .table-wrap { overflow-x: auto; }
+    table { width: 100%; border-collapse: collapse; margin-top: 15px; }
+    th, td { border: 1px solid #ddd; padding: 8px; text-align: left; vertical-align: top; }
+    blockquote { background: #f4f8ff; border-left: 4px solid #0a6cff; padding: 10px; border-radius: 8px; }
+    .error-banner { background: #fdecea; color: #c9302c; padding: 10px; border-radius: 10px; margin-bottom: 10px; display: none; }
+  </style>
 </head>
 <body>
-<div class="container">
-<div class="card" id="formCard">
-<div class="logo" id="logo">⭐</div>
-<h1>Customer Feedback</h1>
-<p style="text-align:center">Vielen Dank, dass Sie sich kurz Zeit für eine Bewertung nehmen.</p>
-<div class="stars" id="stars"></div>
-<input id="name" placeholder="Ihr Name">
-<input id="company" placeholder="Firma">
-<textarea id="comment" rows="4" placeholder="Ihr Feedback"></textarea>
+  <div class="container">
+    <div class="card" id="formCard">
+      <div class="logo" id="logo">⭐</div>
+      <h1>Customer Feedback</h1>
+      <div id="formError" class="error-banner"></div>
+      <p style="text-align:center">Vielen Dank, dass Sie sich kurz Zeit für eine Bewertung nehmen.</p>
+      <div class="stars" id="stars"></div>
+      <input id="name" placeholder="Ihr Name">
+      <input id="company" placeholder="Firma">
+      <textarea id="comment" rows="4" placeholder="Ihr Feedback"></textarea>
+      <button id="submitBtn" onclick="saveFeedback()">Feedback absenden</button>
+      <hr style="margin:25px 0;">
+      <p style="text-align:center"><a href="reviews.html">⭐⭐⭐⭐⭐ Kundenempfehlungen ansehen</a></p>
+    </div>
 
-<button onclick="saveFeedback()">Feedback absenden</button>
+    <div class="card" id="admin">
+      <h2>Admin Dashboard</h2>
+      <div id="adminError" class="error-banner"></div>
+      <p id="stats"></p>
+      <input id="search" placeholder="Suchen..." oninput="renderAdmin()">
+      <canvas id="chart" height="120"></canvas>
+      <h3>Positive Kundenstimmen</h3>
+      <div id="quotes"></div>
+      <div class="table-wrap">
+        <table>
+          <thead><tr><th>Datum</th><th>Name</th><th>Firma</th><th>Sterne</th><th>Kommentar</th><th>Aktion</th></tr></thead>
+          <tbody id="tbody"></tbody>
+        </table>
+      </div>
+      <button onclick="exportJSON()">Backup herunterladen</button>
+    </div>
+  </div>
 
-<hr style="margin:25px 0;">
+  <script>
+    const SUPABASE_URL = "https://wdshlmngpxxkduyzqjhx.supabase.co";
+    const SUPABASE_KEY = "sb_publishable_yu27RAR9CaloFRv3_LGlXA_k9UemqxG";
+    const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
-<p style="text-align:center;">
-    <a href="reviews.html">⭐⭐⭐⭐⭐ Kundenempfehlungen ansehen</a>
-</p>
+    let rating = 0, taps = 0, chart;
+    const stars = document.getElementById("stars");
+    const logo = document.getElementById("logo");
+    const formCard = document.getElementById("formCard");
+    const admin = document.getElementById("admin");
+    const stats = document.getElementById("stats");
+    const tbody = document.getElementById("tbody");
+    const quotes = document.getElementById("quotes");
+    const submitBtn = document.getElementById("submitBtn");
+    const formError = document.getElementById("formError");
+    const adminError = document.getElementById("adminError");
 
-</div>
+    for (let i = 1; i <= 5; i++) {
+      const star = document.createElement("span");
+      star.className = "star";
+      star.textContent = "★";
+      star.onclick = () => {
+        rating = i;
+        [...stars.children].forEach((item, index) => item.className = index < i ? "star active" : "star");
+      };
+      stars.appendChild(star);
+    }
 
-<div class="card" id="admin">
-<h2>Admin Dashboard</h2>
-<p id="stats"></p>
-<input id="search" placeholder="Suchen..." oninput="renderAdmin()">
-<canvas id="chart" height="120"></canvas>
-<h3>Positive Kundenstimmen</h3>
-<div id="quotes"></div>
-<table>
-<thead><tr><th>Datum</th><th>Name</th><th>Firma</th><th>Sterne</th></tr></thead>
-<tbody id="tbody"></tbody>
-</table>
-<button onclick="exportJSON()">Backup herunterladen</button>
-</div>
-</div>
+    logo.onclick = async () => {
+      taps++;
+      if (taps >= 7) {
+        taps = 0;
+        if (prompt("PIN eingeben") === "2208") {
+          formCard.style.display = "none";
+          admin.style.display = "block";
+          await renderAdmin();
+        }
+      }
+    };
 
-<script>
-let rating=0, taps=0, chart;
+    function showError(el, message) {
+      el.textContent = message;
+      el.style.display = message ? "block" : "none";
+    }
 
-const stars=document.getElementById("stars");
-for(let i=1;i<=5;i++){
- const s=document.createElement("span");
- s.className="star";
- s.innerHTML="★";
- s.onclick=()=>{
-   rating=i;
-   [...stars.children].forEach((x,j)=>x.className=j<i?"star active":"star");
- };
- stars.appendChild(s);
-}
+    // Loads all feedback rows from Supabase, newest first.
+    async function getData() {
+      const { data, error } = await supabase
+        .from("feedback")
+        .select("*")
+        .order("created_at", { ascending: false });
+      if (error) throw error;
+      return data;
+    }
 
-logo.onclick=()=>{
- taps++;
- if(taps>=7){
-   taps=0;
-   const pin=prompt("PIN eingeben");
-   if(pin==="2208"){
-      formCard.style.display="none";
-      admin.style.display="block";
-      renderAdmin();
-   }
- }
-}
+    async function saveFeedback() {
+      showError(formError, "");
+      if (rating === 0) {
+        alert("Bitte Sterne auswählen.");
+        return;
+      }
+      submitBtn.disabled = true;
+      const entry = {
+        name: document.getElementById("name").value.trim(),
+        firma: document.getElementById("company").value.trim(),
+        kommentar: document.getElementById("comment").value.trim(),
+        sterne: rating
+      };
+      const { error } = await supabase.from("feedback").insert(entry);
+      submitBtn.disabled = false;
+      if (error) {
+        showError(formError, "Feedback konnte nicht gespeichert werden. Bitte später erneut versuchen.");
+        return;
+      }
+      alert("Vielen Dank für Ihr Feedback!");
+      document.getElementById("name").value = "";
+      document.getElementById("company").value = "";
+      document.getElementById("comment").value = "";
+      rating = 0;
+      [...stars.children].forEach(star => star.className = "star");
+    }
 
-async function getData(){
- const { data, error } = await supabase
-   .from("feedback")
-   .select("*")
-   .order("created_at",{ascending:false});
+    async function deleteFeedback(id) {
+      if (!confirm("Möchtest du dieses Feedback wirklich löschen?")) return;
+      const { error } = await supabase.from("feedback").delete().eq("id", id);
+      if (error) {
+        showError(adminError, "Löschen ist fehlgeschlagen. Bitte erneut versuchen.");
+        return;
+      }
+      await renderAdmin();
+    }
 
- if(error){
-   console.error(error);
-   return [];
- }
- return data;
-}
+    async function renderAdmin() {
+      showError(adminError, "");
+      let all;
+      try {
+        all = await getData();
+      } catch (error) {
+        showError(adminError, "Daten konnten nicht geladen werden. Bitte Seite neu laden.");
+        return;
+      }
 
-async function saveFeedback(){
- if(rating===0){alert("Bitte Sterne auswählen.");return;}
- const entry={
-   name:document.getElementById("name").value.trim(),
-   firma:document.getElementById("company").value.trim(),
-   kommentar:document.getElementById("comment").value.trim(),
-   sterne:rating
- };
+      const query = document.getElementById("search").value.toLowerCase();
+      const data = all.filter(entry =>
+        !query || (entry.name || "").toLowerCase().includes(query) || (entry.firma || "").toLowerCase().includes(query)
+      );
+      const average = data.length ? data.reduce((sum, entry) => sum + entry.sterne, 0) / data.length : 0;
+      stats.textContent = `Bewertungen: ${data.length} | Durchschnitt: ${average.toFixed(2)} | Kundenzufriedenheit: ${(average / 5 * 100).toFixed(0)}%`;
+      tbody.innerHTML = "";
+      quotes.innerHTML = "";
+      const distribution = [0, 0, 0, 0, 0];
 
- const { error } = await supabase
-   .from("feedback")
-   .insert([entry]);
+      data.forEach(entry => {
+        distribution[entry.sterne - 1]++;
+        const datum = entry.created_at ? new Date(entry.created_at).toLocaleString("de-DE") : "-";
+        const row = document.createElement("tr");
+        [datum, entry.name || "-", entry.firma || "-", `${entry.sterne} ⭐`, entry.kommentar || "-"].forEach(value => {
+          const cell = document.createElement("td");
+          cell.textContent = value;
+          row.appendChild(cell);
+        });
+        const actionCell = document.createElement("td");
+        const deleteButton = document.createElement("button");
+        deleteButton.className = "delete-button";
+        deleteButton.textContent = "🗑 Löschen";
+        deleteButton.onclick = () => deleteFeedback(entry.id);
+        actionCell.appendChild(deleteButton);
+        row.appendChild(actionCell);
+        tbody.appendChild(row);
 
- if(error){
-   console.error(error);
-   alert("Feedback konnte nicht gespeichert werden. Bitte versuchen Sie es erneut.");
-   return;
- }
+        if (entry.sterne >= 4 && entry.kommentar) {
+          const quote = document.createElement("blockquote");
+          quote.append(`"${entry.kommentar}"`);
+          const source = document.createElement("small");
+          source.textContent = `${entry.name || "Anonym"}${entry.firma ? " – " + entry.firma : ""}`;
+          quote.appendChild(document.createElement("br"));
+          quote.appendChild(source);
+          quotes.appendChild(quote);
+        }
+      });
 
- alert("Vielen Dank für Ihr Feedback!");
- document.getElementById("name").value="";
- document.getElementById("company").value="";
- document.getElementById("comment").value="";
- rating=0;
- [...stars.children].forEach(x=>x.className="star");
-}
+      if (chart) chart.destroy();
+      chart = new Chart(document.getElementById("chart"), {
+        type: "bar",
+        data: { labels: ["1", "2", "3", "4", "5"], datasets: [{ label: "Sterne", data: distribution }] },
+        options: { plugins: { legend: { display: false } }, scales: { y: { beginAtZero: true, ticks: { precision: 0 } } } }
+      });
+    }
 
-async function renderAdmin(){
- const q=document.getElementById("search").value.toLowerCase();
- const all=await getData();
- const data=all.filter(x=>!q||(x.name||"").toLowerCase().includes(q)||(x.firma||"").toLowerCase().includes(q));
- const avg=data.length?data.reduce((a,b)=>a+b.sterne,0)/data.length:0;
- stats.textContent=`Bewertungen: ${data.length} | Durchschnitt: ${avg.toFixed(2)} | Kundenzufriedenheit: ${(avg/5*100).toFixed(0)}%`;
- tbody.innerHTML="";
- quotes.innerHTML="";
- let dist=[0,0,0,0,0];
- data.forEach(x=>{
-   dist[x.sterne-1]++;
-   const datum=x.created_at?new Date(x.created_at).toLocaleString("de-DE"):"-";
-   tbody.innerHTML+=`<tr><td>${datum}</td><td>${x.name||"-"}</td><td>${x.firma||"-"}</td><td>${x.sterne}</td></tr>`;
-   if(x.sterne>=4 && x.kommentar){
-      quotes.innerHTML+=`<blockquote>"${x.kommentar}"<br><small>${x.name||"Anonym"}${x.firma?" – "+x.firma:""}</small></blockquote>`;
-   }
- });
- if(chart)chart.destroy();
- chart=new Chart(document.getElementById("chart"),{
-   type:"bar",
-   data:{labels:["1","2","3","4","5"],datasets:[{label:"Sterne",data:dist}]},
-   options:{plugins:{legend:{display:false}}}
- });
-}
-
-async function exportJSON(){
- const data=await getData();
- const blob=new Blob([JSON.stringify(data,null,2)],{type:"application/json"});
- const a=document.createElement("a");
- a.href=URL.createObjectURL(blob);
- a.download="customer-feedback-backup.json";
- a.click();
-}
-</script>
+    async function exportJSON() {
+      let data;
+      try {
+        data = await getData();
+      } catch (error) {
+        alert("Daten konnten nicht geladen werden.");
+        return;
+      }
+      const blob = new Blob([JSON.stringify(data, null, 2)], { type: "application/json" });
+      const link = document.createElement("a");
+      link.href = URL.createObjectURL(blob);
+      link.download = "customer-feedback-backup.json";
+      link.click();
+      URL.revokeObjectURL(link.href);
+    }
+  </script>
 </body>
 </html>
