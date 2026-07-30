@@ -37,9 +37,9 @@
       <div id="formError" class="error-banner"></div>
       <p style="text-align:center">Vielen Dank, dass Sie sich kurz Zeit für eine Bewertung nehmen.</p>
       <div class="stars" id="stars"></div>
-      <input id="name" placeholder="Ihr Name">
-      <input id="company" placeholder="Firma">
-      <textarea id="comment" rows="4" placeholder="Ihr Feedback"></textarea>
+      <input id="name" placeholder="Ihr Name" autocomplete="name">
+      <input id="company" placeholder="Firma" autocomplete="organization">
+      <textarea id="comment" rows="4" placeholder="Ihr Feedback" autocomplete="off"></textarea>
       <button id="submitBtn" onclick="saveFeedback()">Feedback absenden</button>
       <hr style="margin:25px 0;">
       <p style="text-align:center"><a href="reviews.html">⭐⭐⭐⭐⭐ Kundenempfehlungen ansehen</a></p>
@@ -49,7 +49,7 @@
       <h2>Admin Dashboard</h2>
       <div id="adminError" class="error-banner"></div>
       <p id="stats"></p>
-      <input id="search" placeholder="Suchen..." oninput="renderAdmin()">
+      <input id="search" placeholder="Suchen..." oninput="renderAdmin()" autocomplete="off">
       <canvas id="chart" height="120"></canvas>
       <h3>Positive Kundenstimmen</h3>
       <div id="quotes"></div>
@@ -145,7 +145,8 @@
       const { error } = await supabaseClient.from("feedback").insert(entry);
       submitBtn.disabled = false;
       if (error) {
-        showError(formError, "Feedback konnte nicht gespeichert werden. Bitte später erneut versuchen.");
+        console.error("Supabase insert error:", error);
+        showError(formError, `Feedback konnte nicht gespeichert werden: ${error.message || error.code || "Unbekannter Fehler"}`);
         return;
       }
       alert("Vielen Dank für Ihr Feedback!");
