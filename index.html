@@ -38,8 +38,8 @@
       <p style="text-align:center">Vielen Dank, dass Sie sich kurz Zeit für eine Bewertung nehmen.</p>
       <div class="stars" id="stars"></div>
       <input id="name" placeholder="Ihr Name" autocomplete="name">
-      <input id="company" placeholder="Firma" autocomplete="organization">
-      <textarea id="comment" rows="4" placeholder="Ihr Feedback" autocomplete="off"></textarea>
+      <input id="firma" placeholder="Firma" autocomplete="organization">
+      <textarea id="kommentar" rows="4" placeholder="Ihr Feedback" autocomplete="off"></textarea>
       <button id="submitBtn" onclick="saveFeedback()">Feedback absenden</button>
       <hr style="margin:25px 0;">
       <p style="text-align:center"><a href="reviews.html">⭐⭐⭐⭐⭐ Kundenempfehlungen ansehen</a></p>
@@ -151,8 +151,8 @@
       }
       alert("Vielen Dank für Ihr Feedback!");
       document.getElementById("name").value = "";
-      document.getElementById("company").value = "";
-      document.getElementById("comment").value = "";
+      document.getElementById("firma").value = "";
+      document.getElementById("kommentar").value = "";
       rating = 0;
       [...stars.children].forEach(star => star.className = "star");
     }
